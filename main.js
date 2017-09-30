@@ -5,9 +5,9 @@ function init() {
 	const ctx = boardEle.getContext('2d');
 	
 	const car1 = new Car(new Position(0, 0), Direction.Right, '#f00');
-	const car2 = new Car(new Position(200, 50), Direction.Left, '#0f0');
-	const car3 = new Car(new Position(200, 200), Direction.Up, '#00f');
-	const car4 = new Car(new Position(50, 200), Direction.Down, '#ff0');
+	const car2 = new Car(new Position(201, 50), Direction.Left, '#0f0');
+	const car3 = new Car(new Position(201, 200), Direction.Up, '#00f');
+	const car4 = new Car(new Position(50, 201), Direction.Down, '#ff0');
 	
 	const board = new Board(500, 500, [car1, car2, car3, car4]);
 	
@@ -15,7 +15,7 @@ function init() {
 	
 	setInterval(function() {
 		draw(game, ctx);
-	}, 100);
+	}, 10);
 }
 
 const CAR_SIZE = 5;
@@ -41,27 +41,35 @@ class Game {
 				// make new spreading pixels
 				if (car.direction == Direction.Up || car.direction == Direction.Down) {
 					const leftOfCar = car.position.modelMove(Direction.Left);
-					this.spreadingPixels.set(leftOfCar,
+					this.spreadingPixels.set(leftOfCar.getHash(),
 							new SpreadingPixel(leftOfCar, Direction.Left, car.color));
 					const rightOfCar = car.position.modelMove(Direction.Right);
-					this.spreadingPixels.set(rightOfCar,
+					this.spreadingPixels.set(rightOfCar.getHash(),
 							new SpreadingPixel(rightOfCar, Direction.Right, car.color));
 				} else if (car.direction == Direction.Left || car.direction == Direction.Right) {
 					const aboveCar = car.position.modelMove(Direction.Up);
-					this.spreadingPixels.set(aboveCar,
+					this.spreadingPixels.set(aboveCar.getHash(),
 							new SpreadingPixel(aboveCar, Direction.Up, car.color));
 					const belowCar = car.position.modelMove(Direction.Down);
-					this.spreadingPixels.set(belowCar,
+					this.spreadingPixels.set(belowCar.getHash(),
 							new SpreadingPixel(belowCar, Direction.Down, car.color));
 				}
 			}
 		}
-		// spread the pixels
-		for (var pixel of this.spreadingPixels.values()) {
-			if (!this.board.isOnBoard(pixel.position)) {
-				this.spreadingPixels.delete(pixel.position);
-			} else {
-				pixel.move();
+		// Spread the pixels.
+		// Copy into a new set so we can modify the `spreadingPixels` Map.
+		const takenPositions = {};
+		for (var pixel of new Set(this.spreadingPixels.values())) {
+			const oldPixelHash = pixel.position.getHash();
+			takenPositions[oldPixelHash] = true;
+			this.spreadingPixels.delete(oldPixelHash);
+			const newPosition = pixel.modelMove();
+			// If the new position is on the board and not taken
+			if (this.board.isOnBoard(newPosition) && !takenPositions[newPosition.getHash()]) {
+				pixel.position = newPosition;
+				const newPixelHash = pixel.position.getHash();
+				takenPositions[newPixelHash] = true;
+				this.spreadingPixels.set(newPixelHash, pixel);
 			}
 		}
 	}
@@ -171,7 +179,7 @@ class Position {
 	
 	getHash() {
 		// TODO don't assume width
-		return this.x * 1000 + this.y;
+		return this.x * 500 + this.y;
 	}
 }
 

@@ -64,14 +64,14 @@ class Game {
 				car.position = newPosition;
 				// make new spreading pixels
 				if (car.direction == Direction.Up || car.direction == Direction.Down) {
-					const leftOfCar = car.position.modelMove(Direction.Left);
+					const leftOfCar = car.position;
 					this.spreadingPixels.set(leftOfCar.getHash(),
 							new SpreadingPixel(leftOfCar, Direction.Left, car.color));
 					const rightOfCar = car.position.modelMove(Direction.Right);
 					this.spreadingPixels.set(rightOfCar.getHash(),
 							new SpreadingPixel(rightOfCar, Direction.Right, car.color));
 				} else if (car.direction == Direction.Left || car.direction == Direction.Right) {
-					const aboveCar = car.position.modelMove(Direction.Up);
+					const aboveCar = car.position;
 					this.spreadingPixels.set(aboveCar.getHash(),
 							new SpreadingPixel(aboveCar, Direction.Up, car.color));
 					const belowCar = car.position.modelMove(Direction.Down);
@@ -162,11 +162,6 @@ class MovingObject {
 		this.color = color;
 	}
 	
-	/* Move the object in its direction. */
-	move() {
-		this.position.move(this.direction);
-	}
-	
 	/* Model where the object would end up if it moved in its direction. */
 	modelMove() {
 		return this.position.modelMove(this.direction);
@@ -189,12 +184,6 @@ class Position {
 	constructor(x, y) {
 		this.x = x;
 		this.y = y;
-	}
-	
-	/* Move in a direction */
-	move(direction) {
-		this.x += direction.x;
-		this.y += direction.y;
 	}
 	
 	/* Model a move in a direction */

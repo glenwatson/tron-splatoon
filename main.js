@@ -120,43 +120,33 @@ class Board {
 	}
 }
 
-class Car {
+class MovingObject {
 	constructor(position, direction, color) {
 		this.position = position;
 		this.direction = direction;
 		this.color = color;
 	}
 	
-	// TODO share with SpreadingPixel
-	/* Move the car in it's direction. */
+	/* Move the object in its direction. */
 	move() {
 		this.position.move(this.direction);
 	}
 	
-	// TODO share with SpreadingPixel
-	/* Model where the car would end up if it moved in its direction. */
+	/* Model where the object would end up if it moved in its direction. */
 	modelMove() {
 		return this.position.modelMove(this.direction);
 	}
 }
 
-class SpreadingPixel {
+class Car extends MovingObject{
 	constructor(position, direction, color) {
-		this.position = position;
-		this.direction = direction;
-		this.color = color;
+		super(position, direction, color);
 	}
+}
 
-	// TODO share with Car
-	/* Move the car in it's direction. */
-	move() {
-		this.position.move(this.direction);
-	}
-	
-	// TODO share with Car
-	/* Model where the car would end up if it moved in its direction. */
-	modelMove() {
-		return this.position.modelMove(this.direction);
+class SpreadingPixel extends MovingObject {
+	constructor(position, direction, color) {
+		super(position, direction, color);
 	}
 }
 

@@ -15,10 +15,10 @@ function init() {
 	
 	setInterval(function() {
 		draw(game, ctx);
-	}, 100);
+	}, 1000);
 }
 
-
+const CAR_SIZE = 5;
 
 function draw(game, ctx) {
 	game.tick();
@@ -28,6 +28,7 @@ function draw(game, ctx) {
 class Game {
 	constructor(board) {
 		this.board = board;
+		this.spreadingPixels = new Map();
 	}
 	
 	tick() {
@@ -35,8 +36,15 @@ class Game {
 			var car = this.board.cars[i];
 			var newPosition = car.modelMove();
 			if (this.board.isOnBoard(newPosition)) {
+				// move the car
 				car.position = newPosition;
+				// make new spreading pixel
+				
 			}
+		}
+		// spread the pixels
+		for (position in this.spreadingPixels.keys()) {
+			
 		}
 	}
 	
@@ -46,15 +54,17 @@ class Game {
 		
 		for (var i = 0; i < this.board.cars.length; i++) {
 			var car = this.board.cars[i];
+			
+			// Draw the car
 			ctx.fillStyle = car.color;
 			if (car.direction == Direction.Up) {
-				ctx.fillRect(car.position.x, car.position.y, 5, 10);
+				ctx.fillRect(car.position.x, car.position.y, CAR_SIZE, CAR_SIZE * 2);
 			} else if (car.direction == Direction.Down) {
-				ctx.fillRect(car.position.x, car.position.y - 5, 5, 10);
+				ctx.fillRect(car.position.x, car.position.y - CAR_SIZE, CAR_SIZE, CAR_SIZE * 2);
 			} else if (car.direction == Direction.Left) {
-				ctx.fillRect(car.position.x, car.position.y, 10, 5);
+				ctx.fillRect(car.position.x, car.position.y, CAR_SIZE * 2, CAR_SIZE);
 			} else if (car.direction == Direction.Right) {
-				ctx.fillRect(car.position.x - 5, car.position.y, 10, 5);
+				ctx.fillRect(car.position.x - CAR_SIZE, car.position.y, CAR_SIZE * 2, CAR_SIZE);
 			}
 		}
 	}
@@ -78,20 +88,13 @@ class Board {
 	}
 }
 
-class SpreadingPixel {
-	constructor(position, direction, color) {
-		this.position = position;
-		this.direction = direction;
-		this.color = color;
-	}
-}
-
 class Car {
 	constructor(position, direction, color) {
 		this.position = position;
 		this.direction = direction;
 		this.color = color;
 	}
+	
 	
 	/* Move the car in it's direction. */
 	move() {
@@ -101,6 +104,14 @@ class Car {
 	/* Model where the car would end up if it moved in its direction. */
 	modelMove() {
 		return this.position.modelMove(this.direction);
+	}
+}
+
+class SpreadingPixel {
+	constructor(position, direction, color) {
+		this.position = position;
+		this.direction = direction;
+		this.color = color;
 	}
 }
 

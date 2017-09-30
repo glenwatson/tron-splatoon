@@ -62,6 +62,12 @@ class Game {
 	}
 	
 	tick() {
+		this.updateDirections();
+		this.updateCars();
+		this.spreadPixels();
+	}
+	
+	updateDirections() {
 		// User controls car[0]
 		if (userDirection && this.board.cars[0].direction != userDirection) {
 			this.board.cars[0].direction = userDirection;
@@ -74,7 +80,9 @@ class Game {
 			this.testTurnCar(this.board.cars[2]);
 		if (entropy % .0001 > .000099)
 			this.testTurnCar(this.board.cars[3]);
-		
+	}
+	
+	updateCars() {
 		// Update all cars
 		for (var i = 0; i < this.board.cars.length; i++) {
 			var car = this.board.cars[i];
@@ -103,6 +111,9 @@ class Game {
 				this.testTurnCar(car);
 			}
 		}
+	}
+	
+	spreadPixels() {
 		// Spread the pixels.
 		// Copy into a new set so we can modify the `spreadingPixels` Map.
 		const takenPositions = {};
@@ -122,10 +133,15 @@ class Game {
 	}
 	
 	draw(ctx) {
-		ctx.fillStyle = 'gray';
-		ctx.fillRect(0, 0, this.board.width, this.board.height);
+		//ctx.fillStyle = 'gray';
+		//ctx.fillRect(0, 0, this.board.width, this.board.height);
 		
-		// Draw the cars.
+		this.drawCars(ctx);
+		this.drawSpreadingPixels(ctx);
+		//this.drawStats(ctx);
+	}
+	
+	drawCars(ctx) {
 		for (var i = 0; i < this.board.cars.length; i++) {
 			var car = this.board.cars[i];
 			// Draw the car.
@@ -140,12 +156,48 @@ class Game {
 				ctx.fillRect(car.position.x - CAR_SIZE, car.position.y, CAR_SIZE * 2, CAR_SIZE);
 			}
 		}
-		
-		// Draw spreading pixels.
+	}
+	
+	drawSpreadingPixels(ctx) {
 		for (var pixel of this.spreadingPixels.values()) {
 			ctx.fillStyle = pixel.color;
 			ctx.fillRect(pixel.position.x, pixel.position.y, 1, 1);
 		}
+	}
+	
+	drawStats(ctx) {
+		// Update stats
+		const imageData = ctx.getImageData(0, 0, 500, 500);
+		const imageDataIterator = imageData.data.values();
+		var current = imageDataIterator.next(); // R
+		const score = [0, 0, 0, 0];
+		while (!current.done) {
+			if (current.value > 0) {
+				current = imageDataIterator.next(); // G
+				if (current.value > 0) {
+					score[3] += 1;
+				} else {
+					score[0] += 1;
+				}
+				current = imageDataIterator.next(); // B
+				current = imageDataIterator.next(); // A
+			} else {
+				current = imageDataIterator.next(); // G
+				if (current.value > 0) {
+					score[1] += 1;
+				}
+				current = imageDataIterator.next(); // B
+				if (current.value > 0) {
+					score[2] += 1;
+				}
+				current = imageDataIterator.next(); // A
+			}
+		}
+		ctx.fillStyle = 'white';	
+		ctx.fillRect(0, 0, 300, 23);
+		ctx.fillStyle = 'black';	
+		ctx.font = '20px consolas';
+		ctx.fillText(score, 0, 20);
 	}
 }
 

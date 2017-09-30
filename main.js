@@ -14,16 +14,34 @@ function init() {
 	const game = new Game(board);
 	
 	setInterval(function() {
-		draw(game, ctx);
+		game.tick();
+		game.draw(ctx);
 	}, 10);
 }
 
 const CAR_SIZE = 5;
 
-function draw(game, ctx) {
-	game.tick();
-	game.draw(ctx);
-}
+var userDirection;
+
+document.onkeydown = function (e) {
+	e = e || window.event;
+	switch (e.charCode || e.keyCode) {
+		case 38:
+			userDirection = Direction.Up;
+			break;
+		case 40:
+			userDirection = Direction.Down;
+			break;
+		case 37:
+			userDirection = Direction.Left;
+			break;
+		case 39:
+			userDirection = Direction.Right;
+			break;
+		default:
+			userDirection = undefined;
+	}
+};
 
 class Game {
 	constructor(board) {
@@ -32,6 +50,12 @@ class Game {
 	}
 	
 	tick() {
+		// User controls car[0]
+		if (userDirection) {
+			this.board.cars[0].direction = userDirection;
+		}
+		
+		// Update all cars
 		for (var i = 0; i < this.board.cars.length; i++) {
 			var car = this.board.cars[i];
 			var newPosition = car.modelMove();

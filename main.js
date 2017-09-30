@@ -6,25 +6,38 @@ function init() {
 	
 	const car1 = new Car(new Position(0, 0), Direction.Right, '#f00');
 	const car2 = new Car(new Position(200, 50), Direction.Left, '#0f0');
+	const car3 = new Car(new Position(200, 200), Direction.Up, '#00f');
+	const car4 = new Car(new Position(50, 200), Direction.Down, '#ff0');
 	
-	const board = new Board(500, 500, [car1, car2]);
+	const board = new Board(500, 500, [car1, car2, car3, car4]);
 	
 	const game = new Game(board);
 	
 	setInterval(function() {
 		draw(game, ctx);
-	}, 2000);
+	}, 100);
 }
 
 
 
 function draw(game, ctx) {
+	game.tick();
 	game.draw(ctx);
 }
 
 class Game {
 	constructor(board) {
 		this.board = board;
+	}
+	
+	tick() {
+		for (var i = 0; i < this.board.cars.length; i++) {
+			var car = this.board.cars[i];
+			var newPosition = car.modelMove();
+			if (this.board.isOnBoard(newPosition)) {
+				car.position = newPosition;
+			}
+		}
 	}
 	
 	draw(ctx) {
@@ -43,9 +56,7 @@ class Game {
 			} else if (car.direction == Direction.Right) {
 				ctx.fillRect(car.position.x - 5, car.position.y, 10, 5);
 			}
-			
 		}
-		
 	}
 }
 
@@ -56,6 +67,14 @@ class Board {
 		// TODO check for same (similar?) colors
 		this.cars = cars;
 		// TODO: obstacles
+	}
+	
+	/* If the given position is on the board */
+	isOnBoard(position) {
+		return position.x >= 0 &&
+				position.y >= 0 &&
+				position.x < this.width &&
+				position.y < this.height;
 	}
 }
 
@@ -73,6 +92,16 @@ class Car {
 		this.direction = direction;
 		this.color = color;
 	}
+	
+	/* Move the car in it's direction. */
+	move() {
+		this.position.move(this.direction);
+	}
+	
+	/* Model where the car would end up if it moved in its direction. */
+	modelMove() {
+		return this.position.modelMove(this.direction);
+	}
 }
 
 class Position {
@@ -81,12 +110,24 @@ class Position {
 		this.y = y;
 	}
 	
+	/* Move in a direction */
+	move(direction) {
+		this.x += direction.x;
+		this.y += direction.y;
+	}
+	
+	/* Model a move in a direction */
+	modelMove(direction) {
+		return new Position(this.x + direction.x, this.y + direction.y);
+	}
+	
 	getHash() {
 		// TODO don't assume width
 		return this.x * 1000 + this.y;
 	}
 }
 
+/* Directions are special positions */
 Direction = {
 	Up: new Position(0, -1),
 	Down: new Position(0, 1),

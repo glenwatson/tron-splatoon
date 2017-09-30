@@ -15,7 +15,7 @@ function init() {
 	
 	setInterval(function() {
 		draw(game, ctx);
-	}, 1000);
+	}, 100);
 }
 
 const CAR_SIZE = 5;
@@ -38,13 +38,31 @@ class Game {
 			if (this.board.isOnBoard(newPosition)) {
 				// move the car
 				car.position = newPosition;
-				// make new spreading pixel
-				
+				// make new spreading pixels
+				if (car.direction == Direction.Up || car.direction == Direction.Down) {
+					const leftOfCar = car.position.modelMove(Direction.Left);
+					this.spreadingPixels.set(leftOfCar,
+							new SpreadingPixel(leftOfCar, Direction.Left, car.color));
+					const rightOfCar = car.position.modelMove(Direction.Right);
+					this.spreadingPixels.set(rightOfCar,
+							new SpreadingPixel(rightOfCar, Direction.Right, car.color));
+				} else if (car.direction == Direction.Left || car.direction == Direction.Right) {
+					const aboveCar = car.position.modelMove(Direction.Up);
+					this.spreadingPixels.set(aboveCar,
+							new SpreadingPixel(aboveCar, Direction.Up, car.color));
+					const belowCar = car.position.modelMove(Direction.Down);
+					this.spreadingPixels.set(belowCar,
+							new SpreadingPixel(belowCar, Direction.Down, car.color));
+				}
 			}
 		}
 		// spread the pixels
-		for (position in this.spreadingPixels.keys()) {
-			
+		for (var pixel of this.spreadingPixels.values()) {
+			if (!this.board.isOnBoard(pixel.position)) {
+				this.spreadingPixels.delete(pixel.position);
+			} else {
+				pixel.move();
+			}
 		}
 	}
 	
@@ -52,10 +70,10 @@ class Game {
 		ctx.fillStyle = 'gray';
 		ctx.fillRect(0, 0, this.board.width, this.board.height);
 		
+		// Draw the cars.
 		for (var i = 0; i < this.board.cars.length; i++) {
 			var car = this.board.cars[i];
-			
-			// Draw the car
+			// Draw the car.
 			ctx.fillStyle = car.color;
 			if (car.direction == Direction.Up) {
 				ctx.fillRect(car.position.x, car.position.y, CAR_SIZE, CAR_SIZE * 2);
@@ -66,6 +84,12 @@ class Game {
 			} else if (car.direction == Direction.Right) {
 				ctx.fillRect(car.position.x - CAR_SIZE, car.position.y, CAR_SIZE * 2, CAR_SIZE);
 			}
+		}
+		
+		// Draw spreading pixels.
+		for (var pixel of this.spreadingPixels.values()) {
+			ctx.fillStyle = pixel.color;
+			ctx.fillRect(pixel.position.x, pixel.position.y, 1, 1);
 		}
 	}
 }
@@ -95,12 +119,13 @@ class Car {
 		this.color = color;
 	}
 	
-	
+	// TODO share with SpreadingPixel
 	/* Move the car in it's direction. */
 	move() {
 		this.position.move(this.direction);
 	}
 	
+	// TODO share with SpreadingPixel
 	/* Model where the car would end up if it moved in its direction. */
 	modelMove() {
 		return this.position.modelMove(this.direction);
@@ -112,6 +137,18 @@ class SpreadingPixel {
 		this.position = position;
 		this.direction = direction;
 		this.color = color;
+	}
+
+	// TODO share with Car
+	/* Move the car in it's direction. */
+	move() {
+		this.position.move(this.direction);
+	}
+	
+	// TODO share with Car
+	/* Model where the car would end up if it moved in its direction. */
+	modelMove() {
+		return this.position.modelMove(this.direction);
 	}
 }
 

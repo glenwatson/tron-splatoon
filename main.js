@@ -4,8 +4,8 @@ function init() {
 	const boardEle = document.getElementById('board');
 	const ctx = boardEle.getContext('2d');
 	
-	const car1 = new Car(new Position(0, 0), '#f00');
-	const car2 = new Car(new Position(200, 50), '#0f0');
+	const car1 = new Car(new Position(0, 0), Direction.Right, '#f00');
+	const car2 = new Car(new Position(200, 50), Direction.Left, '#0f0');
 	
 	const board = new Board(500, 500, [car1, car2]);
 	
@@ -34,7 +34,16 @@ class Game {
 		for (var i = 0; i < this.board.cars.length; i++) {
 			var car = this.board.cars[i];
 			ctx.fillStyle = car.color;
-			ctx.fillRect(car.pos.x, car.pos.y, 5, 5);
+			if (car.direction == Direction.Up) {
+				ctx.fillRect(car.position.x, car.position.y, 5, 10);
+			} else if (car.direction == Direction.Down) {
+				ctx.fillRect(car.position.x, car.position.y - 5, 5, 10);
+			} else if (car.direction == Direction.Left) {
+				ctx.fillRect(car.position.x, car.position.y, 10, 5);
+			} else if (car.direction == Direction.Right) {
+				ctx.fillRect(car.position.x - 5, car.position.y, 10, 5);
+			}
+			
 		}
 		
 	}
@@ -51,17 +60,17 @@ class Board {
 }
 
 class SpreadingPixel {
-	constructor(pos, dir, color) {
-		this.pos = pos;
-		this.y = y;
-		this.dir = dir;
+	constructor(position, direction, color) {
+		this.position = position;
+		this.direction = direction;
 		this.color = color;
 	}
 }
 
 class Car {
-	constructor(pos, color) {
-		this.pos = pos;
+	constructor(position, direction, color) {
+		this.position = position;
+		this.direction = direction;
 		this.color = color;
 	}
 }
@@ -78,5 +87,12 @@ class Position {
 	}
 }
 
+Direction = {
+	Up: new Position(0, -1),
+	Down: new Position(0, 1),
+	Left: new Position(-1, 0),
+	Right: new Position(1, 0)
+};
+
 //wantPositionLookup = new Map();
-//wantPositionLookup.set(pos.getHash(), spreadingPixel);
+//wantPositionLookup.set(position.getHash(), spreadingPixel);

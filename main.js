@@ -49,11 +49,31 @@ class Game {
 		this.spreadingPixels = new Map();
 	}
 	
+	testTurnCar(car) {
+		if (car.direction == Direction.Up) {
+			car.direction = Direction.Right;
+		} else if (car.direction == Direction.Right) {
+			car.direction = Direction.Down;
+		} else if (car.direction == Direction.Down) {
+			car.direction = Direction.Left;
+		} else if (car.direction == Direction.Left) {
+			car.direction = Direction.Up;
+		}
+	}
+	
 	tick() {
 		// User controls car[0]
 		if (userDirection && this.board.cars[0].direction != userDirection) {
 			this.board.cars[0].direction = userDirection;
 		}
+		// Randomly turn cars [1-3]
+		const entropy = Math.random();
+		if (entropy > .99)
+			this.testTurnCar(this.board.cars[1]);
+		if (entropy % .01 > .0099)
+			this.testTurnCar(this.board.cars[2]);
+		if (entropy % .0001 > .000099)
+			this.testTurnCar(this.board.cars[3]);
 		
 		// Update all cars
 		for (var i = 0; i < this.board.cars.length; i++) {
@@ -80,15 +100,7 @@ class Game {
 				}
 			} else {
 				// Turn cars
-				if (car.direction == Direction.Up) {
-					car.direction = Direction.Right;
-				} else if (car.direction == Direction.Right) {
-					car.direction = Direction.Down;
-				} else if (car.direction == Direction.Down) {
-					car.direction = Direction.Left;
-				} else if (car.direction == Direction.Left) {
-					car.direction = Direction.Up;
-				}
+				this.testTurnCar(car);
 			}
 		}
 		// Spread the pixels.

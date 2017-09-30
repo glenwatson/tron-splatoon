@@ -51,7 +51,7 @@ class Game {
 	
 	tick() {
 		// User controls car[0]
-		if (userDirection) {
+		if (userDirection && this.board.cars[0].direction != userDirection) {
 			this.board.cars[0].direction = userDirection;
 		}
 		
@@ -77,6 +77,17 @@ class Game {
 					const belowCar = car.position.modelMove(Direction.Down);
 					this.spreadingPixels.set(belowCar.getHash(),
 							new SpreadingPixel(belowCar, Direction.Down, car.color));
+				}
+			} else {
+				// Turn cars
+				if (car.direction == Direction.Up) {
+					car.direction = Direction.Right;
+				} else if (car.direction == Direction.Right) {
+					car.direction = Direction.Down;
+				} else if (car.direction == Direction.Down) {
+					car.direction = Direction.Left;
+				} else if (car.direction == Direction.Left) {
+					car.direction = Direction.Up;
 				}
 			}
 		}

@@ -21,7 +21,7 @@ function init() {
 
 const CAR_SIZE = 5;
 
-var userDirection;
+let userDirection;
 
 document.onkeydown = function (e) {
 	e = e || window.event;
@@ -84,9 +84,9 @@ class Game {
 	
 	updateCars() {
 		// Update all cars
-		for (var i = 0; i < this.board.cars.length; i++) {
-			var car = this.board.cars[i];
-			var newPosition = car.modelMove();
+		for (let i = 0; i < this.board.cars.length; i++) {
+			let car = this.board.cars[i];
+			let newPosition = car.modelMove();
 			if (this.board.isOnBoard(newPosition)) {
 				// move the car
 				car.position = newPosition;
@@ -117,7 +117,7 @@ class Game {
 		// Spread the pixels.
 		// Copy into a new set so we can modify the `spreadingPixels` Map.
 		const takenPositions = {};
-		for (var pixel of new Set(this.spreadingPixels.values())) {
+		for (let pixel of new Set(this.spreadingPixels.values())) {
 			const oldPixelHash = pixel.position.getHash();
 			takenPositions[oldPixelHash] = true;
 			this.spreadingPixels.delete(oldPixelHash);
@@ -142,8 +142,8 @@ class Game {
 	}
 	
 	drawCars(ctx) {
-		for (var i = 0; i < this.board.cars.length; i++) {
-			var car = this.board.cars[i];
+		for (let i = 0; i < this.board.cars.length; i++) {
+			let car = this.board.cars[i];
 			// Draw the car.
 			ctx.fillStyle = car.darkerColor;
 			if (car.direction == Direction.Up) {
@@ -159,7 +159,7 @@ class Game {
 	}
 	
 	drawSpreadingPixels(ctx) {
-		for (var pixel of this.spreadingPixels.values()) {
+		for (let pixel of this.spreadingPixels.values()) {
 			ctx.fillStyle = pixel.color;
 			let oldPosition = pixel.position.modelOppositeMove(pixel.direction);
 			ctx.fillRect(oldPosition.x, oldPosition.y, 1, 1);
@@ -172,7 +172,7 @@ class Game {
 		// Update stats
 		const imageData = ctx.getImageData(0, 0, 500, 500);
 		const imageDataIterator = imageData.data.values();
-		var current = imageDataIterator.next(); // R
+		let current = imageDataIterator.next(); // R
 		const score = [0, 0, 0, 0];
 		while (!current.done) {
 			if (current.value > 0) {

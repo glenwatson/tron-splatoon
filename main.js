@@ -4,10 +4,10 @@ function init() {
 	const boardEle = document.getElementById('board');
 	const ctx = boardEle.getContext('2d');
 	
-	const car1 = new Car(new Position(0, 0), Direction.Right, '#f00');
-	const car2 = new Car(new Position(201, 50), Direction.Left, '#0f0');
-	const car3 = new Car(new Position(201, 200), Direction.Up, '#00f');
-	const car4 = new Car(new Position(50, 201), Direction.Down, '#ff0');
+	const car1 = new Car(new Position(0, 0), Direction.Right, '#f00', '#faa');
+	const car2 = new Car(new Position(201, 50), Direction.Left, '#0f0', '#afa');
+	const car3 = new Car(new Position(201, 200), Direction.Up, '#00f', '#aaf');
+	const car4 = new Car(new Position(50, 201), Direction.Down, '#ff0', '#ffa');
 	
 	const board = new Board(500, 500, [car1, car2, car3, car4]);
 	
@@ -94,17 +94,17 @@ class Game {
 				if (car.direction == Direction.Up || car.direction == Direction.Down) {
 					const leftOfCar = car.position;
 					this.spreadingPixels.set(leftOfCar.getHash(),
-							new SpreadingPixel(leftOfCar, Direction.Left, car.color));
+							new SpreadingPixel(leftOfCar, Direction.Left, car.color, car.darkerColor));
 					const rightOfCar = car.position.modelMove(Direction.Right);
 					this.spreadingPixels.set(rightOfCar.getHash(),
-							new SpreadingPixel(rightOfCar, Direction.Right, car.color));
+							new SpreadingPixel(rightOfCar, Direction.Right, car.color, car.darkerColor));
 				} else if (car.direction == Direction.Left || car.direction == Direction.Right) {
 					const aboveCar = car.position;
 					this.spreadingPixels.set(aboveCar.getHash(),
-							new SpreadingPixel(aboveCar, Direction.Up, car.color));
+							new SpreadingPixel(aboveCar, Direction.Up, car.color, car.darkerColor));
 					const belowCar = car.position.modelMove(Direction.Down);
 					this.spreadingPixels.set(belowCar.getHash(),
-							new SpreadingPixel(belowCar, Direction.Down, car.color));
+							new SpreadingPixel(belowCar, Direction.Down, car.color, car.darkerColor));
 				}
 			} else {
 				// Turn cars
@@ -145,7 +145,7 @@ class Game {
 		for (var i = 0; i < this.board.cars.length; i++) {
 			var car = this.board.cars[i];
 			// Draw the car.
-			ctx.fillStyle = car.color;
+			ctx.fillStyle = car.darkerColor;
 			if (car.direction == Direction.Up) {
 				ctx.fillRect(car.position.x, car.position.y, CAR_SIZE, CAR_SIZE * 2);
 			} else if (car.direction == Direction.Down) {
@@ -161,6 +161,9 @@ class Game {
 	drawSpreadingPixels(ctx) {
 		for (var pixel of this.spreadingPixels.values()) {
 			ctx.fillStyle = pixel.color;
+			let oldPosition = pixel.position.modelOppositeMove(pixel.direction);
+			ctx.fillRect(oldPosition.x, oldPosition.y, 1, 1);
+			ctx.fillStyle = pixel.darkerColor;
 			ctx.fillRect(pixel.position.x, pixel.position.y, 1, 1);
 		}
 	}
@@ -220,10 +223,11 @@ class Board {
 }
 
 class MovingObject {
-	constructor(position, direction, color) {
+	constructor(position, direction, color, darkerColor) {
 		this.position = position;
 		this.direction = direction;
 		this.color = color;
+		this.darkerColor = darkerColor; // TODO calculate this
 	}
 	
 	/* Model where the object would end up if it moved in its direction. */
@@ -233,14 +237,14 @@ class MovingObject {
 }
 
 class Car extends MovingObject{
-	constructor(position, direction, color) {
-		super(position, direction, color);
+	constructor(position, direction, color, darkerColor) {
+		super(position, direction, color, darkerColor);
 	}
 }
 
 class SpreadingPixel extends MovingObject {
-	constructor(position, direction, color) {
-		super(position, direction, color);
+	constructor(position, direction, color, darkerColor) {
+		super(position, direction, color, darkerColor);
 	}
 }
 
@@ -253,6 +257,11 @@ class Position {
 	/* Model a move in a direction */
 	modelMove(direction) {
 		return new Position(this.x + direction.x, this.y + direction.y);
+	}
+	
+	/* Model a move in the opposite direction */
+	modelOppositeMove(direction) {
+		return new Position(this.x - direction.x, this.y - direction.y);
 	}
 	
 	getHash() {

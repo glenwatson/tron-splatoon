@@ -113,7 +113,7 @@ function init() {
 	setInterval(function() {
 		if (SHOW_SCORE)
 			game.drawScore(ctx);
-	}, 100);
+	}, 2000);
 }
 
 const CAR_SIZE = 5;

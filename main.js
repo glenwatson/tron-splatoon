@@ -155,19 +155,23 @@ class FollowingCpu {
 		const myPosition = board.cars[this.myIndex].position;
 		const targetCar = board.cars[this.carIndexToFollow];
 		const targetPosition = targetCar.position.modelOppositeMove(targetCar.direction);
-		if (targetPosition.x > myPosition.x) {
-			return Direction.Right;
+		const distX = targetPosition.x - myPosition.x;
+		const distY = targetPosition.y - myPosition.y;
+		if (Math.abs(distX) > Math.abs(distY)) {
+			if (distX > 0) {
+				return Direction.Right;
+			}
+			if (distX < 0) {
+				return Direction.Left;
+			}
+		} else {
+			if (distY > 0) {
+				return Direction.Down;
+			}
+			if (distY < 0) {
+				return Direction.Up;
+			}
 		}
-		if (targetPosition.x < myPosition.x) {
-			return Direction.Left;
-		}
-		if (targetPosition.y > myPosition.y) {
-			return Direction.Down;
-		} 
-		if (targetPosition.y < myPosition.y) {
-			return Direction.Up;
-		} 
-		
 	}
 }
 

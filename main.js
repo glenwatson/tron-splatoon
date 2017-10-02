@@ -1,4 +1,4 @@
-window.onload = init;
+window.addEventListener('load', init);
 
 function init() {
 	const boardEle = document.getElementById('board');
@@ -30,20 +30,34 @@ function init() {
 				user.userDirection = Direction.Right;
 				break;
 			case 68:
-				DEBUG = !DEBUG;
+				toggleDebug();
 				break;
 			case 83:
-				SHOW_SCORE = !SHOW_SCORE;
+				toggleScore();
 				break;
 			case 88: //TODO remove
-				// Bump up the AI
-				game.players[1] = new FollowingCpu(1, 0);
-				SHOW_SCORE = true;
+				startGame();
 				break;
 			default:
 				user.userDirection = undefined;
 		}
 	};
+	
+	document.getElementById('D').addEventListener('touchstart', toggleDebug);
+	document.getElementById('S').addEventListener('touchstart', toggleScore);
+	document.getElementById('X').addEventListener('touchstart', startGame);
+	function toggleDebug() {
+		DEBUG = !DEBUG;
+	}
+	function toggleScore() {
+		SHOW_SCORE = !SHOW_SCORE;
+	}
+	function startGame() {
+		// Start the "game"
+		game.players[1] = new FollowingCpu(1, 0);
+		SHOW_SCORE = true;
+		DEBUG = false;
+	}
 	
 	// Swipe events
 	const MAX_SWIPE_TIME = 1000;
@@ -104,7 +118,7 @@ function init() {
 
 const CAR_SIZE = 5;
 
-let DEBUG = false;
+let DEBUG = true;
 let SHOW_SCORE = false;
 
 class UserPlayer {

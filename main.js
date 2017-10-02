@@ -178,26 +178,26 @@ class Game {
 		let current = imageDataIterator.next(); // R
 		const score = [0, 0, 0, 0];
 		while (!current.done) {
-			if (current.value > 0) {
+			if (current.value === 255) {
 				current = imageDataIterator.next(); // G
-				if (current.value > 0) {
+				if (current.value === 255) {
 					score[3] += 1;
 				} else {
 					score[0] += 1;
 				}
 				current = imageDataIterator.next(); // B
-				current = imageDataIterator.next(); // A
 			} else {
 				current = imageDataIterator.next(); // G
-				if (current.value > 0) {
+				if (current.value === 255) {
 					score[1] += 1;
 				}
 				current = imageDataIterator.next(); // B
-				if (current.value > 0) {
+				if (current.value === 255) {
 					score[2] += 1;
 				}
-				current = imageDataIterator.next(); // A
 			}
+			imageDataIterator.next(); // A
+			current = imageDataIterator.next(); // R
 		}
 		ctx.fillStyle = 'white';	
 		ctx.fillRect(0, 0, 300, 23);

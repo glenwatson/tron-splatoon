@@ -64,7 +64,8 @@ function init() {
 	const SWIPE_DISTANCE_THRESHOLD = 100; // min distance traveled to be considered swipe
 	const SWIPE_DISTANCE_RESTRAINT = 70; // maximum distance allowed at the same time in perpendicular direction
 	let startX, startY, startTime;
-	window.addEventListener('touchstart', function(e) {
+	const touchTarget = document.getElementById('touchtarget');
+	touchTarget.addEventListener('touchstart', function(e) {
 		const touchData = e.changedTouches[0];
 		startX = touchData.pageX;
         startY = touchData.pageY;
@@ -72,12 +73,12 @@ function init() {
 		e.preventDefault();
 	}, false);
 	
-	window.addEventListener('touchmove', function(e) {
+	touchTarget.addEventListener('touchmove', function(e) {
 		// prevent scrolling
         e.preventDefault();
     }, false);
 	
-	window.addEventListener('touchend', function(e) {
+	touchTarget.addEventListener('touchend', function(e) {
 		const elapsedTime = new Date().getTime() - startTime;
 		if (elapsedTime <= MAX_SWIPE_TIME) {
 			const touchData = e.changedTouches[0];

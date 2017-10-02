@@ -13,6 +13,7 @@ function init() {
 	
 	const user = new UserPlayer();
 
+	// User input
 	document.onkeydown = function (e) {
 		e = e || window.event;
 		switch (e.charCode || e.keyCode) {
@@ -43,6 +44,51 @@ function init() {
 				user.userDirection = undefined;
 		}
 	};
+	
+	// Swipe events
+	const MAX_SWIPE_TIME = 1000;
+	const SWIPE_DISTANCE_THRESHOLD = 100; // min distance traveled to be considered swipe
+	const SWIPE_DISTANCE_RESTRAINT = 70; // maximum distance allowed at the same time in perpendicular direction
+	let startX, startY, startTime;
+	window.addEventListener('touchstart', function(e) {
+		const touchData = e.changedTouches[0];
+		startX = touchData.pageX;
+        startY = touchData.pageY;
+        startTime = new Date().getTime();
+		e.preventDefault();
+	}, false);
+	
+	window.addEventListener('touchmove', function(e) {
+		// prevent scrolling
+        e.preventDefault();
+    }, false);
+	
+	window.addEventListener('touchend', function(e) {
+		const elapsedTime = new Date().getTime() - startTime;
+		if (elapsedTime <= MAX_SWIPE_TIME) {
+			const touchData = e.changedTouches[0];
+			const distX = startX - touchData.pageX;
+			const distY = startY - touchData.pageY;
+			if (Math.abs(distX) >= SWIPE_DISTANCE_THRESHOLD && Math.abs(distY) <= SWIPE_DISTANCE_RESTRAINT) {
+				if (distX < 0) {
+					//swipe right
+					user.userDirection = Direction.Right;
+				} else {
+					//swipe left
+					user.userDirection = Direction.Left;
+				}
+			} else if (Math.abs(distY) >= SWIPE_DISTANCE_THRESHOLD && Math.abs(distX) <= SWIPE_DISTANCE_RESTRAINT) {
+				if (distY < 0) {
+					//swipe down
+					user.userDirection = Direction.Down;
+				} else {
+					//swipe up
+					user.userDirection = Direction.Up;
+				}
+			}
+		}
+		e.preventDefault();
+	}, false);
 	
 	const game = new Game(board, [user, new RandomCpu()]);
 	

@@ -9,43 +9,76 @@ function init() {
 	const car3 = new Car(new Position(201, 200), Direction.Up, '#00f', '#aaf');
 	const car4 = new Car(new Position(50, 201), Direction.Down, '#ff0', '#ffa');
 	
-	const board = new Board(500, 500, [car1, car2, car3, car4]);
+	const board = new Board(500, 500, [car1, car2]);//, car3, car4]);
 	
-	const game = new Game(board);
+	const user = new UserPlayer();
+
+	document.onkeydown = function (e) {
+		e = e || window.event;
+		switch (e.charCode || e.keyCode) {
+			case 38:
+				user.userDirection = Direction.Up;
+				break;
+			case 40:
+				user.userDirection = Direction.Down;
+				break;
+			case 37:
+				user.userDirection = Direction.Left;
+				break;
+			case 39:
+				user.userDirection = Direction.Right;
+				break;
+			default:
+				user.userDirection = undefined;
+		}
+	};
+	
+	const game = new Game(board, [user, new RandomCpu()]);
 	
 	setInterval(function() {
 		game.tick();
 		game.draw(ctx);
-	}, 10);
+	}, 20);
+	setInterval(function() {
+		game.drawStats(ctx);
+	}, 100);
 }
 
 const CAR_SIZE = 5;
 
-let userDirection;
-
-document.onkeydown = function (e) {
-	e = e || window.event;
-	switch (e.charCode || e.keyCode) {
-		case 38:
-			userDirection = Direction.Up;
-			break;
-		case 40:
-			userDirection = Direction.Down;
-			break;
-		case 37:
-			userDirection = Direction.Left;
-			break;
-		case 39:
-			userDirection = Direction.Right;
-			break;
-		default:
-			userDirection = undefined;
+class UserPlayer {
+	constructor() {
+		this.userDirection;
 	}
-};
+	
+	getDirection(board) {
+		return this.userDirection;
+	}
+}
+
+class RandomCpu {
+	getDirection(board) {
+		const entropy = Math.random();
+		if (entropy > .9975)
+			return Direction.Up;
+		if (entropy > .995)
+			return Direction.Down;
+		if (entropy > .9925)
+			return Direction.Left;
+		if (entropy > .99)
+			return Direction.Right;
+	}
+}
+
+class FollowingCpu {
+	getDirection(board) {
+	}
+}
 
 class Game {
-	constructor(board) {
+	constructor(board, players) {
 		this.board = board;
+		this.players = players;
 		this.spreadingPixels = new Map();
 	}
 	
@@ -68,18 +101,12 @@ class Game {
 	}
 	
 	updateDirections() {
-		// User controls car[0]
-		if (userDirection && this.board.cars[0].direction != userDirection) {
-			this.board.cars[0].direction = userDirection;
-		}
-		// Randomly turn cars [1-3]
-		const entropy = Math.random();
-		if (entropy > .99)
-			this.testTurnCar(this.board.cars[1]);
-		if (entropy % .01 > .0099)
-			this.testTurnCar(this.board.cars[2]);
-		if (entropy % .0001 > .000099)
-			this.testTurnCar(this.board.cars[3]);
+		this.players.forEach((player, index) => {
+			const direction = player.getDirection(this.board);
+			if (direction && this.board.cars[index].direction != direction) {
+				this.board.cars[index].direction = direction;
+			}
+		});
 	}
 	
 	updateCars() {
@@ -141,7 +168,6 @@ class Game {
 		
 		this.drawCars(ctx);
 		this.drawSpreadingPixels(ctx);
-		//this.drawStats(ctx);
 	}
 	
 	drawCars(ctx) {

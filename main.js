@@ -5,7 +5,7 @@ function init() {
 	const ctx = boardEle.getContext('2d');
 	
 	const car1 = new Car(new Position(0, 0), Direction.Right, '#f00', '#faa');
-	const car2 = new Car(new Position(201, 50), Direction.Left, '#0f0', '#afa');
+	const car2 = new Car(new Position(499, 499), Direction.Left, '#0f0', '#afa');
 	const car3 = new Car(new Position(201, 200), Direction.Up, '#00f', '#aaf');
 	const car4 = new Car(new Position(50, 201), Direction.Down, '#ff0', '#ffa');
 	
@@ -28,6 +28,17 @@ function init() {
 			case 39:
 				user.userDirection = Direction.Right;
 				break;
+			case 68:
+				DEBUG = !DEBUG;
+				break;
+			case 83:
+				SHOW_SCORE = !SHOW_SCORE;
+				break;
+			case 88: //TODO remove
+				// Bump up the AI
+				game.players[1] = new FollowingCpu(1, 0);
+				SHOW_SCORE = true;
+				break;
 			default:
 				user.userDirection = undefined;
 		}
@@ -40,11 +51,15 @@ function init() {
 		game.draw(ctx);
 	}, 20);
 	setInterval(function() {
-		game.drawStats(ctx);
+		if (SHOW_SCORE)
+			game.drawScore(ctx);
 	}, 100);
 }
 
 const CAR_SIZE = 5;
+
+let DEBUG = false;
+let SHOW_SCORE = false;
 
 class UserPlayer {
 	constructor() {
@@ -71,7 +86,28 @@ class RandomCpu {
 }
 
 class FollowingCpu {
+	constructor(myIndex, carIndexToFollow) {
+		this.myIndex = myIndex;
+		this.carIndexToFollow = carIndexToFollow;
+	}
+	
 	getDirection(board) {
+		const myPosition = board.cars[this.myIndex].position;
+		const targetCar = board.cars[this.carIndexToFollow];
+		const targetPosition = targetCar.position.modelOppositeMove(targetCar.direction);
+		if (targetPosition.x > myPosition.x) {
+			return Direction.Right;
+		}
+		if (targetPosition.x < myPosition.x) {
+			return Direction.Left;
+		}
+		if (targetPosition.y > myPosition.y) {
+			return Direction.Down;
+		} 
+		if (targetPosition.y < myPosition.y) {
+			return Direction.Up;
+		} 
+		
 	}
 }
 
@@ -145,26 +181,26 @@ class Game {
 		// Copy into a new set so we can modify the `spreadingPixels` Map.
 		const takenPositions = {};
 		for (let pixel of new Set(this.spreadingPixels.values())) {
-			if (pixel.ttl > 0) {
-				const oldPixelHash = pixel.position.getHash();
-				takenPositions[oldPixelHash] = true;
-				this.spreadingPixels.delete(oldPixelHash);
-				const newPosition = pixel.modelMove();
-				// If the new position is on the board and not taken
-				if (this.board.isOnBoard(newPosition) && !takenPositions[newPosition.getHash()]) {
-					pixel.position = newPosition;
-					const newPixelHash = pixel.position.getHash();
-					takenPositions[newPixelHash] = true;
-					this.spreadingPixels.set(newPixelHash, pixel);
-					pixel.ttl--;
-				}
+			const oldPixelHash = pixel.position.getHash();
+			takenPositions[oldPixelHash] = true;
+			this.spreadingPixels.delete(oldPixelHash);
+			const newPosition = pixel.modelMove();
+			// If the new position is on the board and not taken
+			if (pixel.ttl > 0 && this.board.isOnBoard(newPosition) && !takenPositions[newPosition.getHash()]) {
+				pixel.position = newPosition;
+				const newPixelHash = pixel.position.getHash();
+				takenPositions[newPixelHash] = true;
+				this.spreadingPixels.set(newPixelHash, pixel);
+				pixel.ttl--;
 			}
 		}
 	}
 	
 	draw(ctx) {
-		//ctx.fillStyle = 'gray';
-		//ctx.fillRect(0, 0, this.board.width, this.board.height);
+		if (DEBUG) {
+			ctx.fillStyle = 'gray';
+			ctx.fillRect(0, 0, this.board.width, this.board.height);
+		}
 		
 		this.drawCars(ctx);
 		this.drawSpreadingPixels(ctx);
@@ -197,7 +233,7 @@ class Game {
 		}
 	}
 	
-	drawStats(ctx) {
+	drawScore(ctx) {
 		// Update stats
 		const imageData = ctx.getImageData(0, 0, 500, 500);
 		const imageDataIterator = imageData.data.values();

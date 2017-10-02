@@ -243,19 +243,24 @@ class Game {
 	spreadPixels() {
 		// Spread the pixels.
 		// Copy into a new set so we can modify the `spreadingPixels` Map.
-		const takenPositions = {};
+		const takenPositions = {}; // TODO: make a Map?
 		for (let pixel of new Set(this.spreadingPixels.values())) {
 			const oldPixelHash = pixel.position.getHash();
-			takenPositions[oldPixelHash] = true;
+			takenPositions[oldPixelHash] = pixel;
 			this.spreadingPixels.delete(oldPixelHash);
 			const newPosition = pixel.modelMove();
 			// If the new position is on the board and not taken
-			if (pixel.ttl > 0 && this.board.isOnBoard(newPosition) && !takenPositions[newPosition.getHash()]) {
-				pixel.position = newPosition;
-				const newPixelHash = pixel.position.getHash();
-				takenPositions[newPixelHash] = true;
-				this.spreadingPixels.set(newPixelHash, pixel);
-				pixel.ttl--;
+			if (pixel.ttl > 0 && this.board.isOnBoard(newPosition)) {
+				const blockingPixel = takenPositions[newPosition.getHash()];
+				if (blockingPixel) {
+					this.spreadingPixels.delete(blockingPixel.position.getHash());
+				} else {
+					pixel.position = newPosition;
+					const newPixelHash = pixel.position.getHash();
+					takenPositions[newPixelHash] = pixel;
+					this.spreadingPixels.set(newPixelHash, pixel);
+					pixel.ttl--;
+				}
 			}
 		}
 	}

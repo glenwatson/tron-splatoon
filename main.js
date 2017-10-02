@@ -118,16 +118,19 @@ class Game {
 		// Copy into a new set so we can modify the `spreadingPixels` Map.
 		const takenPositions = {};
 		for (let pixel of new Set(this.spreadingPixels.values())) {
-			const oldPixelHash = pixel.position.getHash();
-			takenPositions[oldPixelHash] = true;
-			this.spreadingPixels.delete(oldPixelHash);
-			const newPosition = pixel.modelMove();
-			// If the new position is on the board and not taken
-			if (this.board.isOnBoard(newPosition) && !takenPositions[newPosition.getHash()]) {
-				pixel.position = newPosition;
-				const newPixelHash = pixel.position.getHash();
-				takenPositions[newPixelHash] = true;
-				this.spreadingPixels.set(newPixelHash, pixel);
+			if (pixel.ttl > 0) {
+				const oldPixelHash = pixel.position.getHash();
+				takenPositions[oldPixelHash] = true;
+				this.spreadingPixels.delete(oldPixelHash);
+				const newPosition = pixel.modelMove();
+				// If the new position is on the board and not taken
+				if (this.board.isOnBoard(newPosition) && !takenPositions[newPosition.getHash()]) {
+					pixel.position = newPosition;
+					const newPixelHash = pixel.position.getHash();
+					takenPositions[newPixelHash] = true;
+					this.spreadingPixels.set(newPixelHash, pixel);
+					pixel.ttl--;
+				}
 			}
 		}
 	}
@@ -245,6 +248,7 @@ class Car extends MovingObject{
 class SpreadingPixel extends MovingObject {
 	constructor(position, direction, color, darkerColor) {
 		super(position, direction, color, darkerColor);
+		this.ttl = 100;
 	}
 }
 
